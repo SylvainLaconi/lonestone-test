@@ -9,6 +9,8 @@ export const HomePage = (): JSX.Element => {
     ChoicesType["type"] | null
   >(null);
 
+  const [draw, setDraw] = useState(false);
+
   const getComputerChoice = () => {
     setIsLoading(true);
     return new Promise((resolve, reject) => {
@@ -24,16 +26,16 @@ export const HomePage = (): JSX.Element => {
     });
   };
 
-  const startGame = useCallback(async (canBeats: Types) => {
+  const startGame = useCallback(async (userChoice: Types, canBeats: Types) => {
     const computerChoice = (await getComputerChoice()) as ChoicesType;
     setCComputerChoice(computerChoice.type);
     const winnable = canBeats.includes(computerChoice.type);
 
-    if (winnable) {
-      setWin("You won !");
-    } else {
-      setWin("Oups, you lost");
-    }
+    if (userChoice === computerChoice.type) setDraw(true);
+    else setDraw(false);
+
+    if (winnable) setWin("You won !");
+    else setWin("Oups, you lost");
   }, []);
 
   return (
@@ -43,18 +45,19 @@ export const HomePage = (): JSX.Element => {
         <h4>Choice, wait and get result</h4>
         <Flex>
           {CHOICES.map(({ type, beats, id }) => (
-            <Button onClick={() => startGame(beats)} key={id}>
+            <Button onClick={() => startGame(type, beats)} key={id}>
               {type}
             </Button>
           ))}
         </Flex>
         {isLoading && <p>Choix de l'ordinateur en cours...</p>}
-        {win && !isLoading && (
+        {win && !isLoading && !draw && (
           <Column>
             <p>Computer: choice : {computerChoice}</p>
             {win}
           </Column>
         )}
+        {draw && !isLoading && <p>This is a draw!</p>}
       </Column>
     </Container>
   );
